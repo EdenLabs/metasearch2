@@ -113,7 +113,7 @@ fn recursive_iter_featured_snippet_children(description: &mut String, el: &Eleme
     }
 }
 
-pub fn request_autocomplete(query: &str) -> wreq::RequestBuilder {
+pub fn request_autocomplete(query: &str) -> reqwest::RequestBuilder {
     CLIENT.get(
         Url::parse_with_params(
             "https://suggestqueries.google.com/complete/search",
@@ -142,7 +142,7 @@ pub fn parse_autocomplete_response(body: &str) -> eyre::Result<Vec<String>> {
         .collect())
 }
 
-pub fn request_images(query: &str) -> wreq::RequestBuilder {
+pub fn request_images(query: &str) -> reqwest::RequestBuilder {
     // ok so google also has a json api for images BUT it gives us less results
     CLIENT.get(
         Url::parse_with_params(

@@ -1,0 +1,269 @@
+# ============================================================================
+# Domain Reputation - TOML Config
+# ============================================================================
+# Drop this into your ranking system. Weights are multiplicative:
+#   0.0 = blocked (never show)
+#   0.3 = lowered (deprioritize)
+#   1.0 = neutral (default for unlisted domains)
+#   1.5 = raised (boost)
+#   2.0 = pinned (strong boost)
+#
+# TO EXPAND THIS LIST, fetch comprehensive blocklists:
+#
+#   Super-SEO-Spam-Suppressor (2700+ domains, multiple formats):
+#     git clone https://github.com/NotaInutilis/Super-SEO-Spam-Suppressor
+#     # Files: ublacklist.txt, hosts.txt, adblock.txt
+#     # Parse ublacklist.txt: lines starting with *:// are domain patterns
+#     # Extract with: grep -oP '\*://\K[^/]+' ublacklist.txt | sort -u
+#
+#   awesome-ublacklist (meta-list of all major blocklists):
+#     https://github.com/rjaus/awesome-ublacklist
+#
+#   AI content farm blocklist (1000+ domains):
+#     git clone https://github.com/laylavish/uBlockOrigin-HUGE-AI-Blocklist
+#
+#   Kagi leaderboard (live data, ~200 domains):
+#     Visit https://kagi.com/stats?stat=leaderboard
+#     JS-rendered, scrape with browser devtools:
+#       JSON.stringify([...document.querySelectorAll('.domain-row')]
+#         .map(r => ({domain: r.querySelector('.domain').textContent,
+#                     action: r.querySelector('.action').textContent})))
+#
+#   Convert uBlacklist format to flat domain list:
+#     grep -oP '\*://\*?\.\K[^/*]+' ublacklist.txt | sort -u > domains.txt
+#
+#   Convert hosts file format to flat domain list:
+#     grep '^0.0.0.0' hosts.txt | awk '{print $2}' | sort -u > domains.txt
+# ============================================================================
+
+# --- Social noise: block or heavily lower ---
+[block.social]
+domains = [
+    "pinterest.com", "pinterest.co.uk", "pinterest.fr", "pinterest.de",
+    "pinterest.ca", "pinterest.com.au", "pinterest.it", "pinterest.es",
+    "pinterest.jp", "pinterest.ch", "pinterest.at", "pinterest.se",
+    "pinterest.pt", "pinterest.dk", "pinterest.ph", "pinterest.nz",
+    "quora.com", "facebook.com", "instagram.com", "tiktok.com",
+]
+
+[lower.social]
+domains = [
+    "twitter.com", "x.com", "linkedin.com",
+]
+
+# --- Content farm conglomerates ---
+[block.dotdash_meredith]
+domains = [
+    "dotdash.com", "dotdashmeredith.com", "aboutdotcom.com",
+    "byrdie.com", "thespruce.com", "thespruceeats.com",
+    "thesprucecrafts.com", "thesprucepets.com", "thebalancemoney.com",
+    "verywellhealth.com", "verywellmind.com", "verywellfit.com",
+    "simplyrecipes.com", "liveabout.com", "treehugger.com",
+    "thoughtco.com", "tripsavvy.com", "brides.com", "liquor.com",
+]
+
+[block.valnet]
+domains = [
+    "makeuseof.com", "screenrant.com", "gamerant.com", "cbr.com",
+    "therecipe.com", "thegamer.com", "thetravel.com", "movieweb.com",
+]
+
+[lower.valnet_formerly_good]
+# These were quality sites before Valnet acquired them
+domains = ["xda-developers.com", "howtogeek.com"]
+
+[block.ziff_davis]
+domains = [
+    "lifehacker.com", "mashable.com", "askmen.com", "retailmenot.com",
+]
+
+[block.healthline_media]
+domains = [
+    "healthline.com", "medicalnewstoday.com", "greatist.com",
+    "psychcentral.com",
+]
+
+[block.misc_content_farms]
+domains = [
+    "howstuffworks.com", "buzzfeed.com", "huffpost.com",
+    "insider.com", "businessinsider.com", "whatculture.com",
+    "wikihow.com",
+]
+
+[lower.future_plc]
+# Hardware data sometimes useful, but mostly SEO filler
+domains = [
+    "tomsguide.com", "tomshardware.com", "techradar.com",
+    "gamesradar.com", "windowscentral.com", "androidcentral.com",
+    "imore.com", "pcgamer.com", "creativebloq.com",
+]
+
+[lower.red_ventures]
+domains = ["cnet.com", "zdnet.com"]
+
+[lower.misc]
+domains = ["pcmag.com", "lifewire.com"]
+
+# --- Low quality tech tutorial sites ---
+[block.tutorial_farms]
+domains = [
+    "tutorialspoint.com", "javatpoint.com", "guru99.com",
+]
+
+[lower.tutorial_mixed]
+domains = [
+    "w3schools.com", "geeksforgeeks.org", "programiz.com",
+    "baeldung.com", "freecodecamp.org",
+]
+
+# --- Affiliate / comparison spam ---
+[block.affiliate]
+domains = [
+    "bestreviews.com", "top10.com", "slant.co", "versus.com",
+    "techjury.net",
+]
+
+[lower.affiliate]
+domains = [
+    "forbes.com", "nerdwallet.com", "wirecutter.com",
+    "g2.com", "capterra.com", "trustpilot.com",
+]
+
+# --- AI-generated content farms ---
+[block.ai_slop]
+domains = [
+    "aitoolsarena.com", "toolify.ai", "futurepedia.io",
+    "theresanaiforthat.com", "writesonic.com", "copy.ai",
+    "jasper.ai",
+]
+# NOTE: For comprehensive AI slop blocking (1000+ domains), fetch:
+# https://github.com/laylavish/uBlockOrigin-HUGE-AI-Blocklist
+
+# --- Blogging platforms: lower by default, quality varies ---
+[lower.platforms]
+domains = [
+    "medium.com", "dev.to", "hackernoon.com", "hashnode.dev",
+    "dzone.com", "sitepoint.com", "scotch.io", "vogella.com",
+    "educative.io", "codecademy.com", "udemy.com",
+]
+
+# ============================================================================
+# RAISED / PINNED DOMAINS
+# ============================================================================
+
+# --- Rust ecosystem (pinned - home turf) ---
+[pin.rust]
+domains = [
+    "docs.rs", "doc.rust-lang.org", "rust-lang.org",
+    "users.rust-lang.org", "internals.rust-lang.org",
+]
+
+[raise.rust]
+domains = ["crates.io", "lib.rs"]
+
+# --- Graphics / GPU (pinned - home turf) ---
+[pin.graphics]
+domains = [
+    "khronos.org", "registry.khronos.org",
+]
+
+[raise.graphics]
+domains = [
+    "gpuopen.com", "developer.nvidia.com",
+    "advances.realtimerendering.com",
+    "shadertoy.com", "shadered.org",
+    "computergraphics.stackexchange.com",
+]
+
+# --- C/C++ (pinned) ---
+[pin.cpp]
+domains = ["en.cppreference.com"]
+
+[raise.cpp]
+domains = [
+    "open-std.org", "wg21.link", "isocpp.org",
+]
+
+# --- General tech docs (pinned) ---
+[pin.tech_docs]
+domains = ["developer.mozilla.org"]
+
+[raise.tech_docs]
+domains = [
+    "learn.microsoft.com", "man7.org", "kernel.org",
+    "godbolt.org", "docs.python.org",
+    "w3.org", "tc39.es", "ietf.org", "rfc-editor.org",
+]
+
+# --- Primary sources & communities ---
+[raise.primary]
+domains = [
+    "github.com", "stackoverflow.com", "wikipedia.org",
+    "reddit.com", "news.ycombinator.com", "lobste.rs",
+    "arxiv.org", "archive.org", "scholar.google.com",
+    "semanticscholar.org", "dl.acm.org",
+    "pubmed.ncbi.nlm.nih.gov",
+    "arstechnica.com",
+    "handmade.network",
+    "gamedev.net",
+]
+
+# --- Game engines ---
+[raise.game_engines]
+domains = [
+    "bevyengine.org", "godotengine.org",
+    "forum.godotengine.org",
+    "ziglang.org", "odin-lang.org",
+]
+
+# --- Elite technical blogs (pinned - consistently exceptional) ---
+[pin.tech_blogs]
+domains = [
+    "fasterthanli.me",         # Amos - Rust deep dives
+    "blog.burntsushi.net",     # Andrew Gallant - ripgrep, regex
+    "matklad.github.io",       # Alex Kladov - rust-analyzer
+    "fgiesen.wordpress.com",   # ryg - graphics/performance legend
+    "danluu.com",              # Dan Luu - systems analysis
+    "gafferongames.com",       # Glenn Fiedler - netcode/physics
+    "lwn.net",                 # Linux Weekly News
+]
+
+# --- High quality technical blogs (raised) ---
+[raise.tech_blogs]
+domains = [
+    "without.boats",           # Rust async
+    "blog.m-ou.se",            # Mara Bos - Rust atomics
+    "ntietz.com",
+    "rcoh.me",
+    "thephd.dev",              # C/C++ standards
+    "aras-p.info",             # Graphics
+    "iquilezles.org",          # Shader art/math
+    "adrianb.io",
+    "floooh.github.io",        # Andre Weissflog - sokol
+    "realtimecollisiondetection.net",
+    "cbloomrants.blogspot.com", # Compression/graphics
+    "jvns.ca",                 # Julia Evans - systems
+    "rachelbythebay.com",      # Systems war stories
+    "blog.janestreet.com",
+    "wingolog.org",            # Compilers/VMs
+    "preshing.com",            # Concurrency
+    "nullprogram.com",         # Chris Wellons
+    "raphlinus.github.io",     # Raph Levien - 2D graphics
+    "nical.github.io",         # GPU/graphics
+    "blog.demofox.org",        # Graphics/math
+    "alain.xyz",               # Graphics programming
+    "jendrikillner.com",       # Graphics programming weekly
+    "interplayoflight.wordpress.com",
+    "ourmachinery.com",        # Game engine architecture
+    "hero.handmade.network",   # Casey Muratori
+    "caseymuratori.com",
+    "phoronix.com",            # Linux/GPU benchmarks
+    "johnaustin.io",
+]
+
+# --- Neutral platforms (quality varies by author) ---
+[neutral.platforms]
+domains = [
+    "substack.com", "infoq.com", "digitalocean.com",
+    "youtube.com", "nytimes.com", "coursera.org",
+]
