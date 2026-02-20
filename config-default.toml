@@ -28,3 +28,32 @@ api = false
 # priority.
 # "quora.com" = 0.1
 # ".quora.com" = 0.1
+
+[rerank]
+# Controls post-merge re-ranking of search results. Combines the upstream engine
+# score with domain reputation (Layer 1) and vocabulary sophistication (Layer 2).
+# enabled = false
+# alpha = 0.60
+# beta = 0.25
+# gamma = 0.15
+# blocklist_path = "res/my_blocklist.txt"
+# reputation_path = "res/my_reputation.toml"
+
+[rerank.l2_weights]
+# Weights for vocabulary sophistication features (Layer 2).
+# capitalized_word_ratio = 0.25
+# unique_word_ratio = 0.25
+# technical_term_density = 0.20
+# avg_word_length = 0.15
+# char_per_word = 0.15
+
+[rerank.url_signal_weights]
+# Weights for URL structure signals (Layer 1). These do not need to sum to 1.0.
+# url_depth = 0.10
+# url_slug_word_count = 0.15
+# is_docs_path = 0.30
+# is_forum_path = 0.20
+# is_institutional_tld = 0.10
+# domain_token_count = -0.15
+# has_subdomain = 0.05
+# is_commercial_pattern = -0.25

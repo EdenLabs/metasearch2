@@ -30,7 +30,8 @@ pub async fn request(query: &str) -> RequestResponse {
                 )
                 .as_str(),
             )
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         )
         .into()
 }

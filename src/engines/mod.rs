@@ -14,6 +14,7 @@ use maud::PreEscaped;
 use serde::{Deserialize, Deserializer, Serialize};
 use tokio::sync::mpsc;
 use tracing::{error, info};
+use wreq_util::Emulation;
 
 mod macros;
 mod ranking;
@@ -24,6 +25,7 @@ use crate::{
 
 pub mod answer;
 pub mod postsearch;
+pub mod rerank;
 pub mod search;
 
 engines! {
@@ -121,6 +123,8 @@ pub struct SearchQuery {
     /// The config is part of the query so it's possible to make a query with a
     /// custom config.
     pub config: Arc<Config>,
+    /// Rerank data for post-merge result re-ranking. None if disabled.
+    pub rerank_data: Option<Arc<rerank::RerankData>>,
 }
 
 impl Deref for SearchQuery {
@@ -158,11 +162,11 @@ impl Display for SearchTab {
 
 pub enum RequestResponse {
     None,
-    Http(Box<reqwest::RequestBuilder>),
+    Http(Box<wreq::RequestBuilder>),
     Instant(Box<EngineResponse>),
 }
-impl From<reqwest::RequestBuilder> for RequestResponse {
-    fn from(req: reqwest::RequestBuilder) -> Self {
+impl From<wreq::RequestBuilder> for RequestResponse {
+    fn from(req: wreq::RequestBuilder) -> Self {
         Self::Http(Box::new(req))
     }
 }
@@ -171,7 +175,7 @@ trait IntoRequestResponseResult {
     fn into_request_response_result(self) -> eyre::Result<RequestResponse>;
 }
 
-impl IntoRequestResponseResult for reqwest::RequestBuilder {
+impl IntoRequestResponseResult for wreq::RequestBuilder {
     fn into_request_response_result(self) -> eyre::Result<RequestResponse> {
         Ok(RequestResponse::Http(Box::new(self)))
     }
@@ -193,11 +197,11 @@ impl IntoRequestResponseResult for eyre::Result<RequestResponse> {
 }
 
 pub enum RequestAutocompleteResponse {
-    Http(Box<reqwest::RequestBuilder>),
+    Http(Box<wreq::RequestBuilder>),
     Instant(Vec<String>),
 }
-impl From<reqwest::RequestBuilder> for RequestAutocompleteResponse {
-    fn from(req: reqwest::RequestBuilder) -> Self {
+impl From<wreq::RequestBuilder> for RequestAutocompleteResponse {
+    fn from(req: wreq::RequestBuilder) -> Self {
         Self::Http(Box::new(req))
     }
 }
@@ -208,7 +212,7 @@ impl From<Vec<String>> for RequestAutocompleteResponse {
 }
 
 pub struct HttpResponse {
-    pub res: reqwest::Response,
+    pub res: wreq::Response,
     pub body: String,
     pub config: Arc<Config>,
 }
@@ -219,7 +223,7 @@ impl<'a> From<&'a HttpResponse> for &'a str {
     }
 }
 
-impl From<HttpResponse> for reqwest::Response {
+impl From<HttpResponse> for wreq::Response {
     fn from(res: HttpResponse) -> Self {
         res.res
     }
@@ -327,7 +331,7 @@ impl ProgressUpdate {
 }
 
 async fn make_request(
-    request: reqwest::RequestBuilder,
+    request: wreq::RequestBuilder,
     engine: Engine,
     query: &SearchQuery,
     send_engine_progress_update: impl Fn(Engine, EngineProgressUpdate),
@@ -430,7 +434,12 @@ async fn make_requests(
         }
     }
 
-    let response = ranking::merge_engine_responses(query.config.clone(), responses);
+    let response = ranking::merge_engine_responses(
+        query.config.clone(),
+        query.rerank_data.as_deref(),
+        &query.query,
+        responses,
+    );
     let has_infobox = response.infobox.is_some();
     progress_tx.send(ProgressUpdate::new(
         ProgressUpdateData::Response(ResponseForTab::All(response.clone())),
@@ -638,9 +647,10 @@ pub async fn autocomplete(config: &Config, query: &str) -> eyre::Result<Vec<Stri
     ))
 }
 
-pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-    reqwest::ClientBuilder::new()
+pub static CLIENT: LazyLock<wreq::Client> = LazyLock::new(|| {
+    wreq::Client::builder()
         .local_address(IpAddr::from_str("0.0.0.0").unwrap())
+        .emulation(Emulation::Firefox139)
         // we pretend to be a normal browser so websites don't block us
         .user_agent("Mozilla/5.0 (Windows NT 10.0; rv:139.0) Gecko/20100101 Firefox/139.0")
         .timeout(Duration::from_secs(10))

@@ -17,7 +17,8 @@ pub async fn request(query: &str) -> RequestResponse {
                     ("type", "web"),
                 ],
             )
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         )
         .into()
 }

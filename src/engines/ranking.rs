@@ -6,13 +6,16 @@ use crate::{
 };
 
 use super::{
+    rerank::{self, RerankData},
     Answer, AutocompleteResult, Engine, EngineImageResult, EngineImagesResponse, EngineResponse,
     EngineSearchResult, FeaturedSnippet, ImagesResponse, Infobox, Response, SearchResult,
 };
 
 pub fn merge_engine_responses(
-    config: Arc<Config>,
-    responses: HashMap<Engine, EngineResponse>,
+    config      : Arc<Config>,
+    rerank_data : Option<&RerankData>,
+    query       : &str,
+    responses   : HashMap<Engine, EngineResponse>,
 ) -> Response {
     let mut search_results: Vec<SearchResult<EngineSearchResult>> = Vec::new();
     let mut featured_snippet: Option<FeaturedSnippet> = None;
@@ -124,6 +127,11 @@ pub fn merge_engine_responses(
     }
 
     search_results.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+
+    // Apply re-ranking if data is available.
+    if let Some(data) = rerank_data {
+        rerank::rerank(data, &config.rerank, query, &mut search_results);
+    }
 
     Response {
         search_results,

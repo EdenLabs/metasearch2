@@ -1,9 +1,11 @@
 use std::{
     env,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use config::Config;
+use engines::rerank::RerankData;
 use tracing::error;
 
 pub mod config;
@@ -29,7 +31,22 @@ async fn main() {
             return;
         }
     };
-    web::run(config).await;
+
+    // Load rerank data if enabled.
+    let rerank_data = if config.rerank.enabled {
+        match RerankData::load(&config.rerank) {
+            Ok(data) => Some(Arc::new(data)),
+            Err(err) => {
+                error!("Failed to load rerank data: {err}");
+                None
+            }
+        }
+    }
+    else {
+        None
+    };
+
+    web::run(config, rerank_data).await;
 }
 
 fn config_path() -> PathBuf {

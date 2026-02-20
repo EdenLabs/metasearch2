@@ -27,7 +27,8 @@ pub async fn request(query: &str) -> RequestResponse {
                 )
                 .as_str(),
             )
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         )
         .into()
 }
@@ -54,7 +55,7 @@ pub struct WiktionaryDefinition {
 pub fn parse_response(
     HttpResponse { res, body, .. }: &HttpResponse,
 ) -> eyre::Result<EngineResponse> {
-    let url = res.url();
+    let url = Url::parse(&res.uri().to_string()).unwrap();
 
     let Ok(res) = serde_json::from_str::<WiktionaryResponse>(body) else {
         return Ok(EngineResponse::new());

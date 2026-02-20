@@ -10,7 +10,7 @@ use crate::{
     parse::{parse_html_response_with_opts, ParseOpts, QueryMethod},
 };
 
-pub async fn request(query: &str) -> reqwest::RequestBuilder {
+pub async fn request(query: &str) -> wreq::RequestBuilder {
     let cvid = generate_cvid();
     let url = Url::parse_with_params(
         "https://www.bing.com/search",
@@ -29,7 +29,7 @@ pub async fn request(query: &str) -> reqwest::RequestBuilder {
     )
     .unwrap();
     CLIENT
-        .get(url)
+        .get(url.as_str())
         .header("Cookie", &format!("SRCHHPGUSR=IG={}", cvid))
 }
 
@@ -85,7 +85,7 @@ pub fn parse_response(body: &str) -> eyre::Result<EngineResponse> {
     )
 }
 
-pub fn request_images(query: &str) -> reqwest::RequestBuilder {
+pub fn request_images(query: &str) -> wreq::RequestBuilder {
     CLIENT.get(
         Url::parse_with_params(
             "https://www.bing.com/images/async",
@@ -96,7 +96,8 @@ pub fn request_images(query: &str) -> reqwest::RequestBuilder {
                 ("count", "35"),
             ],
         )
-        .unwrap(),
+        .unwrap()
+        .as_str(),
     )
 }
 

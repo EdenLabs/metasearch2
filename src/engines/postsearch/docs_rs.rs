@@ -1,9 +1,10 @@
 use maud::{html, PreEscaped};
 use scraper::{Html, Selector};
+use url::Url;
 
 use crate::engines::{HttpResponse, Response, CLIENT};
 
-pub async fn request(response: &Response) -> Option<reqwest::RequestBuilder> {
+pub async fn request(response: &Response) -> Option<wreq::RequestBuilder> {
     for search_result in response.search_results.iter().take(8) {
         if search_result.result.url.starts_with("https://docs.rs/") {
             return Some(CLIENT.get(search_result.result.url.as_str()));
@@ -14,7 +15,7 @@ pub async fn request(response: &Response) -> Option<reqwest::RequestBuilder> {
 }
 
 pub fn parse_response(HttpResponse { res, body, .. }: &HttpResponse) -> Option<PreEscaped<String>> {
-    let url = res.url().clone();
+    let url = Url::parse(&res.uri().to_string()).unwrap();
 
     let dom = Html::parse_document(body);
 

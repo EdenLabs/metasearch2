@@ -46,7 +46,8 @@ pub async fn request(query: &SearchQuery) -> RequestResponse {
                     ("adtech", config.args.adtech.as_str()),
                 ],
             )
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         )
         .into()
 }

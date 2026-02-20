@@ -7,7 +7,14 @@ use crate::{
 
 pub async fn request(query: &str) -> RequestResponse {
     CLIENT
-        .get(Url::parse_with_params("https://search.brave.com/search", &[("q", query)]).unwrap())
+        .get(
+            Url::parse_with_params(
+                "https://search.brave.com/search",
+                &[("q", query), ("spellcheck", "0")],
+            )
+            .unwrap()
+            .as_str(),
+        )
         .into()
 }
 

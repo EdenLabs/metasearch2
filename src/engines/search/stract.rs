@@ -19,7 +19,8 @@ pub async fn request(query: &str) -> RequestResponse {
                     ("optic", ""),
                 ],
             )
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         )
         .into()
 }

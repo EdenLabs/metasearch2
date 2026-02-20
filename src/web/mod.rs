@@ -20,6 +20,7 @@ use maud::{html, Markup, PreEscaped};
 use tracing::info;
 
 use crate::config::Config;
+use crate::engines::rerank::RerankData;
 
 macro_rules! register_static_routes {
     ( $app:ident, $( $x:expr ),* ) => {
@@ -39,7 +40,7 @@ macro_rules! register_static_routes {
     };
 }
 
-pub async fn run(config: Config) {
+pub async fn run(config: Config, rerank_data: Option<Arc<RerankData>>) {
     let bind_addr = config.bind;
 
     let config = Arc::new(config);
@@ -64,7 +65,7 @@ pub async fn run(config: Config) {
         .route("/autocomplete", get(autocomplete::route))
         .route("/image-proxy", get(image_proxy::route))
         .layer(middleware::from_fn_with_state(
-            config.clone(),
+            (config.clone(), rerank_data),
             config_middleware,
         ))
         .with_state(config);
@@ -102,7 +103,7 @@ fn guess_mime_type(path: &str) -> &'static str {
 }
 
 async fn config_middleware(
-    State(config): State<Arc<Config>>,
+    State((config, rerank_data)): State<(Arc<Config>, Option<Arc<RerankData>>)>,
     cookies: CookieJar,
     mut req: Request,
     next: Next,
@@ -119,6 +120,9 @@ async fn config_middleware(
 
     // modify the state
     req.extensions_mut().insert(config);
+    if let Some(rerank_data) = rerank_data {
+        req.extensions_mut().insert(rerank_data);
+    }
 
     Ok(next.run(req).await)
 }

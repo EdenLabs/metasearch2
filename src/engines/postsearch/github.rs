@@ -4,7 +4,7 @@ use url::Url;
 
 use crate::engines::{answer::regex, Response, CLIENT};
 
-pub async fn request(response: &Response) -> Option<reqwest::RequestBuilder> {
+pub async fn request(response: &Response) -> Option<wreq::RequestBuilder> {
     for search_result in response.search_results.iter().take(8) {
         if regex!(r"^https:\/\/github\.com\/[\w-]+\/[\w.-]+$").is_match(&search_result.result.url) {
             return Some(CLIENT.get(search_result.result.url.as_str()));

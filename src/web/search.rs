@@ -14,11 +14,13 @@ use axum::{
 use bytes::Bytes;
 use maud::{html, PreEscaped, DOCTYPE};
 
+use std::sync::Arc;
+
 use crate::{
     config::Config,
     engines::{
-        self, Engine, EngineProgressUpdate, ProgressUpdateData, ResponseForTab, SearchQuery,
-        SearchTab,
+        self, rerank::RerankData, Engine, EngineProgressUpdate, ProgressUpdateData,
+        ResponseForTab, SearchQuery, SearchTab,
     },
     web::head_html,
 };
@@ -119,6 +121,7 @@ pub fn render_engine_list(engines: &[engines::Engine], config: &Config) -> PreEs
 pub async fn get(
     Query(params): Query<HashMap<String, String>>,
     Extension(config): Extension<Config>,
+    rerank_data: Option<Extension<Arc<RerankData>>>,
     headers: HeaderMap,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> axum::response::Response {
@@ -168,6 +171,7 @@ pub async fn get(
                 |ip| ip.to_str().unwrap_or_default().to_string(),
             ),
         config: config.clone().into(),
+        rerank_data: rerank_data.map(|Extension(d)| d),
     };
 
     let trying_to_use_api =
